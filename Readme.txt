@@ -35,8 +35,8 @@ Your project should be hosted online and also create a repository on GitHub for 
 ------------------------------------------------------------------
 
 Endpoint                                Functionality
-POST /signup                            Create new account
-POST /login                             Login to user account
+POST /signup                            Create new account      --done
+POST /login                             Login to user account   --done
 GET /events                             Get all upcoming event
 POST events/<eventId>/ticket            Buy/reserve a ticket for an event
 PATCH /events/<eventId>/<ticketId>      Cancel ticket reservation

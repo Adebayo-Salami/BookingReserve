@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 const methodOverride = require("method-override");
 const rootApi = require("./api/rootapi");
 const userApi = require("./api/userapi");
+const eventApi = require("./api/eventapi");
 
 //setting up environment
 var app = express();
@@ -19,3 +20,4 @@ http.createServer(app).listen(9000, () => {
 
 app.use("/", rootApi);
 app.use("/user", userApi);
+app.use("/event", eventApi);
