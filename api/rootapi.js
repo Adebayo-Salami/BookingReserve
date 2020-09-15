@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const UserService = require("../services/userService");
+const EventService = require("../services/eventService");
 
 var Response = {
   ResponseCode: String,
@@ -55,6 +56,23 @@ router.post("/login", (req, res) => {
     Response.ResponseObject = response.ResponseObject;
     res.json(Response);
     return;
+  } else {
+    Response.ResponseCode = "-01";
+    Response.ResponseMessage = response.ErrorMessage;
+    res.json(Response);
+    return;
+  }
+});
+
+router.get("/events", (req, res) => {
+  //Calling Event Service to get all current events
+
+  const response = EventService.GetAllEvents();
+  if (response.IsSuccessful == true) {
+    Response.ResponseCode = "00";
+    Response.ResponseMessage = "Records Successfullly Retrieved";
+    Response.ResponseObject = response.ResponseObject;
+    res.json(Response);
   } else {
     Response.ResponseCode = "-01";
     Response.ResponseMessage = response.ErrorMessage;

@@ -56,8 +56,8 @@ exports.RegisterUser = function (
       return responseObject;
     }
 
-    var uchatDB = db.db(dbTables.DatabaseName);
-    uchatDB
+    var africanBulbDB = db.db(dbTables.DatabaseName);
+    africanBulbDB
       .collection(dbTables.UserTable)
       .insertOne(userObject, (insertErr, data) => {
         if (insertErr) {
@@ -66,6 +66,7 @@ exports.RegisterUser = function (
           return responseObject;
         }
 
+        db.close();
         responseObject.IsSuccessful = true;
         responseObject.ErrorMessage = "Registeration Successful!";
         return responseObject;
@@ -88,24 +89,27 @@ exports.LoginUser = function (emailAddress, password) {
       responseObject.ErrorMessage = err.message;
       return responseObject;
     }
-    var uchatDB = db.db(dbTables.DatabaseName);
-    uchatDB.collection(dbTables.UserTable).findOne(userObject, (err, data) => {
-      if (err) {
-        responseObject.IsSuccessful = false;
-        responseObject.ErrorMessage = err.message;
-        return responseObject;
-      }
+    var africanBulbDB = db.db(dbTables.DatabaseName);
+    africanBulbDB
+      .collection(dbTables.UserTable)
+      .findOne(userObject, (err, data) => {
+        if (err) {
+          responseObject.IsSuccessful = false;
+          responseObject.ErrorMessage = err.message;
+          return responseObject;
+        }
 
-      if (data == null) {
-        responseObject.IsSuccessful = false;
-        responseObject.ErrorMessage = "User does not exist";
-        return responseObject;
-      }
+        if (data == null) {
+          responseObject.IsSuccessful = false;
+          responseObject.ErrorMessage = "User does not exist";
+          return responseObject;
+        }
 
-      responseObject.IsSuccessful = true;
-      responseObject.ErrorMessage = "Authentication Successful";
-      responseObject.ResponseObject = data;
-      return responseObject;
-    });
+        db.close();
+        responseObject.IsSuccessful = true;
+        responseObject.ErrorMessage = "Authentication Successful";
+        responseObject.ResponseObject = data;
+        return responseObject;
+      });
   });
 };
