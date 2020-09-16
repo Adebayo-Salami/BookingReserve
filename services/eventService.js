@@ -362,7 +362,7 @@ exports.CancelTicket = async function (eventId, ticketId) {
       //Form ticket Object
       respFetchTicket.Status = false;
 
-      let respUpdateTicket = await eventCollection.updateOne(
+      let respUpdateTicket = await ticketCollection.updateOne(
         { _id: ticket_id },
         { $set: respFetchTicket },
         { upsert: true }

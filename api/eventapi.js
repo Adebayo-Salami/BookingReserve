@@ -8,12 +8,13 @@ var Response = {
   ResponseObject: Object,
 };
 
-router.post("/:eventId/ticket", (req, res) => {
-  const eventId = req.params.eventId;
-  const userId = req.body.userId;
+router.post("/:eventId/ticket", async (req, res) => {
+  console.log("entered");
+  const EventId = req.params.eventId;
+  const UserId = req.body.userId;
 
-  const response = EventService.PurchaseEventTicket(eventId, userId);
-  if (response.IsSuccessful) {
+  const response = await EventService.PurchaseEventTicket(EventId, UserId);
+  if (response.IsSuccessful == true) {
     Response.ResponseCode = "00";
     Response.ResponseMessage = "Ticket Reserved Successfully";
     res.json(Response);

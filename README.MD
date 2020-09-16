@@ -1,26 +1,28 @@
-To Call Register User Api POST [/signup]
+To Call Register User Api POST [/signup] - Create new account
 Sample Request:
 Endpoint: {IP}/signup
 body:
 {
-"FirstName" : "Value",
-"LastName" : "Value",
-"Password" : "Value",
-"EmailAddress" : "Value",
-"PhoneNumber" : "Value"
+"FirstName" : "Value(String)",
+"LastName" : "Value"(String),
+"Password" : "Value(String)",
+"EmailAddress" : "Value(String)",
+"PhoneNumber" : "Value(String)"
 }
 response:{
 "ResponseCode": "00",
 "ResponseMessage": "Registration Successful!"
 }
 
-To Call Login User Api POST [/login]
+---
+
+To Call Login User Api POST [/login] - Login to user account
 Sample Request:
 Endpoint: {IP}/login
 body:
 {
-"Username" : "Value",
-"Password" : "Value"
+"Username" : "Value(String)",
+"Password" : "Value(String)"
 }
 response:{
 "ResponseCode": "00",
@@ -35,24 +37,9 @@ response:{
 }
 }
 
-To Call Add Event Api POST [/events]
-Sample Request:
-Endpoint: {IP}/events
-body:
-{
-"EventName" : "Value",
-"EventLocation" : "Value",
-"EventHost" : "Value",
-"DateOfEvent" : "Value",
-"EventTicketPrice" : "Value",
-"TotalTicketsToBeAvailable" : "Value"
-}
-response:{
-"ResponseCode": "00",
-"ResponseMessage": "Event Added Successfullly"
-}
+---
 
-To Call Get Events Api GET [/events]
+To Call Get Events Api GET [/events] -Get all upcoming event
 Sample Request:
 Endpoint: {IP}/events
 response:{
@@ -71,20 +58,109 @@ response:{
 ]
 }
 
-To Call Update Event Api PATCH [/events/:Id]
+---
+
+To Call POST events/?eventId?/ticket Api POST [/events/<eventId>/ticket] -Buy/reserve a ticket for an event
+Sample Request:
+Endpoint: {IP}/events/{Event objectID}/ticket
+params: eventId(String)
+body: {
+"userId" : "value(String)"
+}
+response:{
+"ResponseCode": "00",
+"ResponseMessage": "Ticket Reserved Successfully"
+}
+
+---
+
+To Call PATCH /events/?eventId?/?ticketId? Api PATCH [/events/<eventId>/<ticketId>] -Cancel ticket reservation
+Sample Request:
+Endpoint: {IP}/events/{Event objectID}/{ticket objectID}
+params: eventId(String)
+params ticketId(String)
+response:{
+"ResponseCode": "00",
+"ResponseMessage": "Ticket Cancelled Successfully"
+}
+
+---
+
+To Call Add Event Api POST [/events] -Admin route to create a new event
 Sample Request:
 Endpoint: {IP}/events
-params: Event_Id
 body:
 {
-"EventName" : "Value",
-"EventLocation" : "Value",
-"EventHost" : "Value",
-"DateOfEvent" : "Value",
-"EventTicketPrice" : "Value",
-"TotalTicketsToBeAvailable" : "Value"
+"EventName" : "Value(String)",
+"EventLocation" : "Value(String)",
+"EventHost" : "Value(String)",
+"DateOfEvent" : "Value(Date)",
+"EventTicketPrice" : "Value(Number)",
+"TotalTicketsToBeAvailable" : "Value(Number)"
+}
+response:{
+"ResponseCode": "00",
+"ResponseMessage": "Event Added Successfullly"
+}
+
+---
+
+To Call Update Event Api PATCH [/events/:Id] -Admin route to update an event
+Sample Request:
+Endpoint: {IP}/events
+params: Event_Id(String)
+body:
+{
+"EventName" : "Value(String)", --Optional
+"EventLocation" : "Value(String)", --Optional
+"EventHost" : "Value(String)", --Optional
+"DateOfEvent" : "Value(Date)", --Optional
+"EventTicketPrice" : "Value(Number)", --Optional
+"TotalTicketsToBeAvailable" : "Value(Number)" --Optional
 }
 response:{
 "ResponseCode": "00",
 "ResponseMessage": "Event Updated Successfullly"
 }
+
+---
+
+To Call Get ALL User Tickets For an event Api GET [/user/tickets] -Get all user’s reserved tickets for events
+Sample Request:
+Endpoint: {IP}/user/tickets
+body:{
+"UserID" : "Value(String)",
+"EventID" : "Value(String)"
+}
+response:
+"ResponseCode": "00",
+"ResponseMessage": "Records Fetched Successfullly",
+"ResponseObject": [
+{
+"_id": "5f6294583bbade6c1859d8d6",
+"EventID": "5f625ea5222d1c45b4389a72",
+"UserID": "5f628e9be1caf72304c9ab00",
+"Price": "2000",
+"Status": true
+}
+]
+}
+
+--
+
+To Call Get All User's tickets Api GET [/<userId>/tickets] -Admin route to get all user’s reserved tickets
+Sample Request:
+Endpoint: {IP}/{user ObjectID}/tickets
+params: userID
+response:{
+"ResponseCode": "00",
+"ResponseMessage": "Records Fetched Successfullly",
+"ResponseObject": [
+{
+"_id": "5f6294583bbade6c1859d8d6",
+"EventID": "5f625ea5222d1c45b4389a72",
+"UserID": "5f628e9be1caf72304c9ab00",
+"Price": "2000",
+"Status": true
+}
+]

@@ -232,8 +232,9 @@ exports.GetUserTicketsForEvent = async function (userId, eventId) {
     let checkUserTicketsQuery = {
       UserID: userId,
       EventID: eventId,
-      Status: true,
+      // Status: true,
     };
+
     let respcheckUserTickets = await ticketCollection
       .find(checkUserTicketsQuery)
       .toArray();

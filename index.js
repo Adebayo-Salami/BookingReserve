@@ -18,6 +18,6 @@ http.createServer(app).listen(9000, () => {
   console.log("Server start on port 9000");
 });
 
-app.use("/", rootApi);
 app.use("/user", userApi);
+app.use("/", rootApi);
 app.use("/events", eventApi);
