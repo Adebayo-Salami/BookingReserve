@@ -82,6 +82,10 @@ exports.LoginUser = function (emailAddress, password) {
     return responseObject;
   }
 
+  //Set Search Criteria
+  userObject.EmailAddress = emailAddress;
+  userObject.Password = password;
+
   //Connect To The Database Server
   MongoClient.connect(dbTables.Endpoint, (err, db) => {
     if (err) {

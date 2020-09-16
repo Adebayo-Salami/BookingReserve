@@ -10,8 +10,8 @@ const eventApi = require("./api/eventapi");
 
 //setting up environment
 var app = express();
-app.use(bodyparser.json());
-app.use(bodyparser.urlencoded());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded());
 app.use(methodOverride());
 //app.use(cors({origin: "http"}));
 http.createServer(app).listen(9000, () => {
@@ -20,4 +20,4 @@ http.createServer(app).listen(9000, () => {
 
 app.use("/", rootApi);
 app.use("/user", userApi);
-app.use("/event", eventApi);
+app.use("/events", eventApi);
