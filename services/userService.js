@@ -180,6 +180,7 @@ exports.GetUserTickets = async function (userId) {
 
     let checkUserTicketsQuery = {
       UserID: userId,
+      Status: true,
     };
     let respcheckUserTickets = await ticketCollection
       .find(checkUserTicketsQuery)
@@ -231,6 +232,7 @@ exports.GetUserTicketsForEvent = async function (userId, eventId) {
     let checkUserTicketsQuery = {
       UserID: userId,
       EventID: eventId,
+      Status: true,
     };
     let respcheckUserTickets = await ticketCollection
       .find(checkUserTicketsQuery)

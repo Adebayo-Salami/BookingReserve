@@ -4,6 +4,7 @@ const Ticket = {
   UserID: Number,
   DatePurchased: Date,
   Price: Number,
+  Status: Boolean,
 };
 
 module.exports = Ticket;

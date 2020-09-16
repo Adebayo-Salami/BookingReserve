@@ -192,7 +192,7 @@ exports.UpdateEvent = async function (
       }
 
       let respUpdateEvent = await eventCollection.updateOne(
-        { ID: respcheckEventExists.ID },
+        { _id: o_id },
         { $set: respcheckEventExists },
         { upsert: true }
       );
@@ -222,13 +222,13 @@ exports.UpdateEvent = async function (
 };
 
 exports.PurchaseEventTicket = async function (eventId, userId) {
-  if (eventId == null || eventId <= 0) {
+  if (eventId == null) {
     responseObject.IsSuccessful = false;
     responseObject.ErrorMessage = "Invalid Event ID";
     return responseObject;
   }
 
-  if (userId == null || userId <= 0) {
+  if (userId == null) {
     responseObject.IsSuccessful = false;
     responseObject.ErrorMessage = "Invalid Event ID";
     return responseObject;
@@ -251,6 +251,61 @@ exports.PurchaseEventTicket = async function (eventId, userId) {
   try {
     const db = client.db(dbTables.DatabaseName);
     let ticketCollection = db.collection(dbTables.TicketTable);
+    let eventCollection = db.collection(dbTables.EventTable);
+    let userCollection = db.collection(dbTables.UserTable);
+
+    //Check If Event is valid
+    var ObjectID = require("mongodb").ObjectID;
+    var event_id = new ObjectID(eventId);
+    let checkEventExistsQuery = {
+      _id: event_id,
+    };
+    let respcheckEventExists = await eventCollection.findOne(
+      checkEventExistsQuery
+    );
+
+    if (respcheckEventExists != null) {
+      //Check If User ID is valid
+      var user_id = new ObjectID(userId);
+      let checkUserExistsQuery = {
+        _id: user_id,
+      };
+      let respcheckUserExists = await userCollection.findOne(
+        checkUserExistsQuery
+      );
+
+      if (respcheckUserExists != null) {
+        //Still Check if event has a past date
+
+        //Create ticket object
+        ticketObject.DatePurchased = Date.now;
+        ticketObject.EventID = eventId;
+        ticketObject.UserID = userId;
+        ticketObject.Price = respcheckEventExists.TicketPrice;
+        ticketObject.Status = true;
+
+        //Add ticket record to db
+        let respAddTicket = await ticketCollection.insertOne(ticketObject);
+        if (respAddTicket.insertedCount == 1) {
+          responseObject.IsSuccessful = true;
+          responseObject.ErrorMessage = "Ticket created Successfully!";
+          return responseObject;
+        } else {
+          responseObject.IsSuccessful = false;
+          responseObject.ErrorMessage =
+            "Failed to create ticket, Pls try again!";
+          return responseObject;
+        }
+      } else {
+        responseObject.IsSuccessful = false;
+        responseObject.ErrorMessage = "User does not exist!";
+        return responseObject;
+      }
+    } else {
+      responseObject.IsSuccessful = false;
+      responseObject.ErrorMessage = "Event does not exist!";
+      return responseObject;
+    }
   } catch (err) {
     responseObject.IsSuccessful = false;
     responseObject.ErrorMessage = err.message;
@@ -258,60 +313,80 @@ exports.PurchaseEventTicket = async function (eventId, userId) {
   } finally {
     client.close();
   }
-  // MongoClient.connect(dbTables.Endpoint, (err, db) => {
-  //   if (err) {
-  //     responseObject.IsSuccessful = false;
-  //     responseObject.ErrorMessage = err.message;
-  //     return responseObject;
-  //   }
-  //   var africanBulbDB = db.db(dbTables.DatabaseName);
-  //   africanBulbDB
-  //     .collection(dbTables.EventTable)
-  //     .findOne(eventObject, (err, data) => {
-  //       if (err) {
-  //         db.close();
-  //         responseObject.IsSuccessful = false;
-  //         responseObject.ErrorMessage = err.message;
-  //         return responseObject;
-  //       }
+};
 
-  //       if (data == null) {
-  //         db.close();
-  //         responseObject.IsSuccessful = false;
-  //         responseObject.ErrorMessage = "Event does not exist";
-  //         return responseObject;
-  //       } else {
-  //         eventObject = data;
-  //         if (eventObject.TotalTicketsToBeSold > 0) {
-  //           //Create ticket object
-  //           ticketObject.UserID = userId;
-  //           ticketObject.EventID = eventId;
-  //           ticketObject.DatePurchased = Date.now();
-  //           ticketObject.Price = eventObject.TicketPrice;
+exports.CancelTicket = async function (eventId, ticketId) {
+  if (eventId == null) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = "Invalid Event ID";
+    return responseObject;
+  }
 
-  //           //Save Ticket Object To DB
-  //           africanBulbDB
-  //             .collection(dbTables.TicketTable)
-  //             .insert(ticketObject, (err, ticketData) => {
-  //               if (err) {
-  //                 db.close();
-  //                 responseObject.IsSuccessful = false;
-  //                 responseObject.ErrorMessage = err.message;
-  //                 return responseObject;
-  //               }
+  if (ticketId == null) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = "Invalid Ticket ID";
+    return responseObject;
+  }
 
-  //               db.close();
-  //               responseObject.IsSuccessful = true;
-  //               responseObject.ErrorMessage = "Ticket Reserved Successful!";
-  //               return responseObject;
-  //             });
-  //         } else {
-  //           db.close();
-  //           responseObject.IsSuccessful = false;
-  //           responseObject.ErrorMessage = "Tickets are sold out!";
-  //           return responseObject;
-  //         }
-  //       }
-  //     });
-  // });
+  const client = await MongoClient.connect(dbTables.Endpoint, {
+    useNewUrlParser: true,
+  }).catch((err) => {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = err.message;
+    return responseObject;
+  });
+
+  if (!client) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = "Could not connect!";
+    return responseObject;
+  }
+
+  try {
+    const db = client.db(dbTables.DatabaseName);
+    let ticketCollection = db.collection(dbTables.TicketTable);
+
+    var ObjectID = require("mongodb").ObjectID;
+    var ticket_id = new ObjectID(ticketId);
+
+    let checkTicketExistsQuery = {
+      _id: ticket_id,
+      EventID: eventId,
+    };
+
+    let respFetchTicket = await ticketCollection.findOne(
+      checkTicketExistsQuery
+    );
+
+    if (respFetchTicket != null) {
+      //Form ticket Object
+      respFetchTicket.Status = false;
+
+      let respUpdateTicket = await eventCollection.updateOne(
+        { _id: ticket_id },
+        { $set: respFetchTicket },
+        { upsert: true }
+      );
+
+      if (respUpdateTicket.modifiedCount > 0) {
+        responseObject.IsSuccessful = true;
+        responseObject.ErrorMessage = "Ticket Cancelled Successful!";
+        return responseObject;
+      } else {
+        responseObject.IsSuccessful = false;
+        responseObject.ErrorMessage = "Could not cancel ticket !";
+        return responseObject;
+      }
+    } else {
+      responseObject.IsSuccessful = false;
+      responseObject.ErrorMessage = "Ticket Does not exist!";
+      return responseObject;
+    }
+  } catch (err) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = err.message;
+    return responseObject;
+  } finally {
+    client.close();
+  }
 };

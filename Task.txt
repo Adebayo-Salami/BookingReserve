@@ -38,7 +38,7 @@ Endpoint                                Functionality
 POST /signup                            Create new account      --done
 POST /login                             Login to user account   --done
 GET /events                             Get all upcoming event  --done
-POST events/<eventId>/ticket            Buy/reserve a ticket for an event --
+POST events/<eventId>/ticket            Buy/reserve a ticket for an event --done
 PATCH /events/<eventId>/<ticketId>      Cancel ticket reservation --
 POST /events                            Admin route to create a new event --done
 PATCH /events/<eventId>                 Admin route to update an event --done
