@@ -15,7 +15,7 @@ router.get("/", (req, res) => {
   res.json(Response);
 });
 
-router.post("/signup", (req, res) => {
+router.post("/signup", async (req, res) => {
   //Fetch data from requesty payload
   const firstName = req.body.FirstName;
   const lastName = req.body.LastName;
@@ -23,7 +23,7 @@ router.post("/signup", (req, res) => {
   const email = req.body.EmailAddress;
   const phoneNo = req.body.PhoneNumber;
 
-  const response = UserService.RegisterUser(
+  const response = await UserService.RegisterUser(
     lastName,
     firstName,
     phoneNo,
@@ -44,12 +44,12 @@ router.post("/signup", (req, res) => {
   }
 });
 
-router.post("/login", (req, res) => {
+router.post("/login", async (req, res) => {
   //Fetch data from requesty payload
   const email = req.body.Username;
   const password = req.body.Password;
 
-  const response = UserService.LoginUser(email, password);
+  const response = await UserService.LoginUser(email, password);
   if (response.IsSuccessful == true) {
     Response.ResponseCode = "00";
     Response.ResponseMessage = response.ErrorMessage;
@@ -64,10 +64,10 @@ router.post("/login", (req, res) => {
   }
 });
 
-router.get("/events", (req, res) => {
+router.get("/events", async (req, res) => {
   //Calling Event Service to get all current events
 
-  const response = EventService.GetAllEvents();
+  const response = await EventService.GetAllEvents();
   if (response.IsSuccessful == true) {
     Response.ResponseCode = "00";
     Response.ResponseMessage = "Records Successfullly Retrieved";
@@ -76,6 +76,36 @@ router.get("/events", (req, res) => {
   } else {
     Response.ResponseCode = "-01";
     Response.ResponseMessage = response.ErrorMessage;
+    res.json(Response);
+    return;
+  }
+});
+
+router.post("/events", async (req, res) => {
+  //Fetch data from request payload
+  const eventName = req.body.EventName;
+  const eventLocation = req.body.EventLocation;
+  const eventHost = req.body.EventHost;
+  const eventDate = req.body.DateOfEvent;
+  const eventTicketPrice = req.body.EventTicketPrice;
+  const totalTicketToBeAvailable = req.body.TotalTicketsToBeAvailable;
+
+  const response = await EventService.AddNewEvent(
+    eventName,
+    eventLocation,
+    eventHost,
+    eventDate,
+    eventTicketPrice,
+    totalTicketToBeAvailable
+  );
+  if (response.IsSuccessful == true) {
+    Response.ResponseCode = "00";
+    Response.ResponseMessage = "Event Added Successfullly";
+    res.json(Response);
+    return;
+  } else {
+    Response.ResponseCode = "-01";
+    Response.ResponseMessage = "Event Failed to Add";
     res.json(Response);
     return;
   }

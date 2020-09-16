@@ -4,33 +4,129 @@ const ticketObject = require("../models/ticket");
 const eventObject = require("../models/event");
 const responseObject = require("../models/response");
 
-exports.GetAllEvents = function () {
+exports.GetAllEvents = async function () {
   //Connect To The Database Server
-  MongoClient.connect(dbTables.Endpoint, (err, db) => {
-    if (err) {
+  //Connect To The Database Server
+  const client = await MongoClient.connect(dbTables.Endpoint, {
+    useNewUrlParser: true,
+  }).catch((err) => {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = err.message;
+    return responseObject;
+  });
+
+  if (!client) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = "Could not connect!";
+    return responseObject;
+  }
+
+  try {
+    const db = client.db(dbTables.DatabaseName);
+    let eventCollection = db.collection(dbTables.EventTable);
+
+    //Query for all events
+    let respEvents = await eventCollection.find({}).toArray();
+
+    console.log(respEvents);
+
+    responseObject.IsSuccessful = true;
+    responseObject.ErrorMessage = "Success!";
+    responseObject.ResponseObject = respEvents;
+    return responseObject;
+  } catch (err) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = err.message;
+    return responseObject;
+  } finally {
+    client.close();
+  }
+};
+
+exports.AddNewEvent = async function (
+  name,
+  location,
+  hostedBy,
+  dateOfEvent,
+  ticketPrice,
+  totalTicketsToBeSold
+) {
+  if (name == null) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = "Event Name Is Required";
+    return responseObject;
+  }
+  if (location == null) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = "Event Location Is Required";
+    return responseObject;
+  }
+  if (hostedBy == null) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = "Event Host Is Required";
+    return responseObject;
+  }
+  if (dateOfEvent == null) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = "Date of Event Is Required";
+    return responseObject;
+  }
+  if (ticketPrice == null) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = "Event Ticket Price Is Required";
+    return responseObject;
+  }
+  if (totalTicketsToBeSold == null) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage =
+      "Total Tickets to be made available and sold Is Required";
+    return responseObject;
+  }
+
+  //Create Ticket Object
+  eventObject.Name = name;
+  eventObject.Location = location;
+  eventObject.HostedBy = hostedBy;
+  eventObject.DateOfEvent = dateOfEvent;
+  eventObject.TicketPrice = ticketPrice;
+  eventObject.TotalTicketsToBeSold = totalTicketsToBeSold;
+
+  const client = await MongoClient.connect(dbTables.Endpoint, {
+    useNewUrlParser: true,
+  }).catch((err) => {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = err.message;
+    return responseObject;
+  });
+
+  if (!client) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = "Could not connect!";
+    return responseObject;
+  }
+
+  try {
+    const db = client.db(dbTables.DatabaseName);
+    let eventCollection = db.collection(dbTables.EventTable);
+
+    //Add event record to db
+    let respAddEvent = await eventCollection.insertOne(eventObject);
+    if (respAddEvent.insertedCount == 1) {
+      responseObject.IsSuccessful = true;
+      responseObject.ErrorMessage = "Event Added Successfully!";
+      return responseObject;
+    } else {
       responseObject.IsSuccessful = false;
-      responseObject.ErrorMessage = err.message;
+      responseObject.ErrorMessage = "Failed to add event, Pls try again!";
       return responseObject;
     }
-    var africanBulbDB = db.db(dbTables.DatabaseName);
-    africanBulbDB
-      .collection(dbTables.EventTable)
-      .find({})
-      .toArray(function (err, result) {
-        if (err) {
-          db.close();
-          responseObject.IsSuccessful = false;
-          responseObject.ErrorMessage = err.message;
-          return responseObject;
-        }
-
-        db.close();
-        responseObject.IsSuccessful = true;
-        responseObject.ErrorMessage = "Retrieved Successfully";
-        responseObject.ResponseObject = result;
-        return responseObject;
-      });
-  });
+  } catch (err) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = err.message;
+    return responseObject;
+  } finally {
+    client.close();
+  }
 };
 
 exports.PurchaseEventTicket = function (eventId, userId) {

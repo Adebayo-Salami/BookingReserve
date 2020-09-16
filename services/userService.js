@@ -3,7 +3,7 @@ var MongoClient = require("mongodb").MongoClient;
 const userObject = require("../models/user");
 const responseObject = require("../models/response");
 
-exports.RegisterUser = function (
+exports.RegisterUser = async function (
   lastName,
   firstName,
   phoneNumber,
@@ -49,51 +49,57 @@ exports.RegisterUser = function (
   userObject.Password = password;
 
   //Check If Any User with the same email address exists, then to save to database
-  MongoClient.connect(dbTables.Endpoint, (err, db) => {
-    if (err) {
-      responseObject.IsSuccessful = false;
-      responseObject.ErrorMessage = err.message;
+  const client = await MongoClient.connect(dbTables.Endpoint, {
+    useNewUrlParser: true,
+  }).catch((err) => {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = err.message;
+    return responseObject;
+  });
+
+  if (!client) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = "Could not connect!";
+    return responseObject;
+  }
+
+  try {
+    const db = client.db(dbTables.DatabaseName);
+    let userCollection = db.collection(dbTables.UserTable);
+
+    //Check IF User Exists
+    let checkUserExistsQuery = { EmailAddress: userObject.EmailAddress };
+    let respcheckUserExists = await userCollection.findOne(
+      checkUserExistsQuery
+    );
+
+    if (respcheckUserExists == null) {
+      //Add user record to db
+      let respAddUser = await userCollection.insertOne(userObject);
+      if (respAddUser.insertedCount == 1) {
+        responseObject.IsSuccessful = true;
+        responseObject.ErrorMessage = "Registration Successful!";
+        return responseObject;
+      } else {
+        responseObject.IsSuccessful = false;
+        responseObject.ErrorMessage = "Registration Failed, Pls try again!";
+        return responseObject;
+      }
+    } else {
+      responseObject.IsSuccessful = true;
+      responseObject.ErrorMessage = "User with this email already exists.";
       return responseObject;
     }
-
-    var africanBulbDB = db.db(dbTables.DatabaseName);
-    africanBulbDB
-      .collection(dbTables.UserTable)
-      .findOne({ EmailAddress: userObject.EmailAddress }, (findErr, data) => {
-        if (findErr) {
-          db.close();
-          responseObject.IsSuccessful = false;
-          responseObject.ErrorMessage = insertErr.message;
-          return responseObject;
-        }
-
-        if (data == null) {
-          africanBulbDB
-            .collection(dbTables.UserTable)
-            .insertOne(userObject, (insertErr, data) => {
-              if (insertErr) {
-                db.close();
-                responseObject.IsSuccessful = false;
-                responseObject.ErrorMessage = insertErr.message;
-                return responseObject;
-              }
-
-              db.close();
-              responseObject.IsSuccessful = true;
-              responseObject.ErrorMessage = "Registeration Successful!";
-              return responseObject;
-            });
-        } else {
-          db.close();
-          responseObject.IsSuccessful = false;
-          responseObject.ErrorMessage = "User with this email already exists!";
-          return responseObject;
-        }
-      });
-  });
+  } catch (err) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = err.message;
+    return responseObject;
+  } finally {
+    client.close();
+  }
 };
 
-exports.LoginUser = function (emailAddress, password) {
+exports.LoginUser = async function (emailAddress, password) {
   //Perform Null Checks
   if (emailAddress == null || password == null) {
     responseObject.IsSuccessful = false;
@@ -101,40 +107,48 @@ exports.LoginUser = function (emailAddress, password) {
     return responseObject;
   }
 
-  //Set Search Criteria
-  userObject.EmailAddress = emailAddress;
-  userObject.Password = password;
-
   //Connect To The Database Server
-  MongoClient.connect(dbTables.Endpoint, (err, db) => {
-    if (err) {
-      responseObject.IsSuccessful = false;
-      responseObject.ErrorMessage = err.message;
+  const client = await MongoClient.connect(dbTables.Endpoint, {
+    useNewUrlParser: true,
+  }).catch((err) => {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = err.message;
+    return responseObject;
+  });
+
+  if (!client) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = "Could not connect!";
+    return responseObject;
+  }
+
+  try {
+    const db = client.db(dbTables.DatabaseName);
+    let userCollection = db.collection(dbTables.UserTable);
+
+    //Check IF User Exists
+    let checkUserExistsQuery = {
+      EmailAddress: emailAddress,
+      Password: password,
+    };
+    let respcheckUserExists = await userCollection.findOne(
+      checkUserExistsQuery
+    );
+    if (respcheckUserExists != null) {
+      responseObject.IsSuccessful = true;
+      responseObject.ErrorMessage = "Login Successful!";
+      responseObject.ResponseObject = respcheckUserExists;
+      return responseObject;
+    } else {
+      responseObject.IsSuccessful = true;
+      responseObject.ErrorMessage = "No User with this credential exists!";
       return responseObject;
     }
-    var africanBulbDB = db.db(dbTables.DatabaseName);
-    africanBulbDB
-      .collection(dbTables.UserTable)
-      .findOne(userObject, (err, data) => {
-        if (err) {
-          db.close();
-          responseObject.IsSuccessful = false;
-          responseObject.ErrorMessage = err.message;
-          return responseObject;
-        }
-
-        if (data == null) {
-          db.close();
-          responseObject.IsSuccessful = false;
-          responseObject.ErrorMessage = "User does not exist";
-          return responseObject;
-        }
-
-        db.close();
-        responseObject.IsSuccessful = true;
-        responseObject.ErrorMessage = "Authentication Successful";
-        responseObject.ResponseObject = data;
-        return responseObject;
-      });
-  });
+  } catch (err) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = err.message;
+    return responseObject;
+  } finally {
+    client.close();
+  }
 };
