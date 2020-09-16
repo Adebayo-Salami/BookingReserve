@@ -3,6 +3,7 @@ const Ticket = {
   EventID: Number,
   UserID: Number,
   DatePurchased: Date,
+  Price: Number,
 };
 
 module.exports = Ticket;

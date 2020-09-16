@@ -48,7 +48,7 @@ exports.RegisterUser = function (
   userObject.EmailAddress = emailAddress;
   userObject.Password = password;
 
-  //Save To Database
+  //Check If Any User with the same email address exists, then to save to database
   MongoClient.connect(dbTables.Endpoint, (err, db) => {
     if (err) {
       responseObject.IsSuccessful = false;
@@ -59,17 +59,36 @@ exports.RegisterUser = function (
     var africanBulbDB = db.db(dbTables.DatabaseName);
     africanBulbDB
       .collection(dbTables.UserTable)
-      .insertOne(userObject, (insertErr, data) => {
-        if (insertErr) {
+      .findOne({ EmailAddress: userObject.EmailAddress }, (findErr, data) => {
+        if (findErr) {
+          db.close();
           responseObject.IsSuccessful = false;
           responseObject.ErrorMessage = insertErr.message;
           return responseObject;
         }
 
-        db.close();
-        responseObject.IsSuccessful = true;
-        responseObject.ErrorMessage = "Registeration Successful!";
-        return responseObject;
+        if (data == null) {
+          africanBulbDB
+            .collection(dbTables.UserTable)
+            .insertOne(userObject, (insertErr, data) => {
+              if (insertErr) {
+                db.close();
+                responseObject.IsSuccessful = false;
+                responseObject.ErrorMessage = insertErr.message;
+                return responseObject;
+              }
+
+              db.close();
+              responseObject.IsSuccessful = true;
+              responseObject.ErrorMessage = "Registeration Successful!";
+              return responseObject;
+            });
+        } else {
+          db.close();
+          responseObject.IsSuccessful = false;
+          responseObject.ErrorMessage = "User with this email already exists!";
+          return responseObject;
+        }
       });
   });
 };
@@ -98,12 +117,14 @@ exports.LoginUser = function (emailAddress, password) {
       .collection(dbTables.UserTable)
       .findOne(userObject, (err, data) => {
         if (err) {
+          db.close();
           responseObject.IsSuccessful = false;
           responseObject.ErrorMessage = err.message;
           return responseObject;
         }
 
         if (data == null) {
+          db.close();
           responseObject.IsSuccessful = false;
           responseObject.ErrorMessage = "User does not exist";
           return responseObject;

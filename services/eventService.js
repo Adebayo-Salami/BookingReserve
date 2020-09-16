@@ -18,6 +18,7 @@ exports.GetAllEvents = function () {
       .find({})
       .toArray(function (err, result) {
         if (err) {
+          db.close();
           responseObject.IsSuccessful = false;
           responseObject.ErrorMessage = err.message;
           return responseObject;
@@ -59,28 +60,49 @@ exports.PurchaseEventTicket = function (eventId, userId) {
       .collection(dbTables.EventTable)
       .findOne(eventObject, (err, data) => {
         if (err) {
+          db.close();
           responseObject.IsSuccessful = false;
           responseObject.ErrorMessage = err.message;
           return responseObject;
         }
 
         if (data == null) {
+          db.close();
           responseObject.IsSuccessful = false;
           responseObject.ErrorMessage = "Event does not exist";
           return responseObject;
+        } else {
+          eventObject = data;
+          if (eventObject.TotalTicketsToBeSold > 0) {
+            //Create ticket object
+            ticketObject.UserID = userId;
+            ticketObject.EventID = eventId;
+            ticketObject.DatePurchased = Date.now();
+            ticketObject.Price = eventObject.TicketPrice;
+
+            //Save Ticket Object To DB
+            africanBulbDB
+              .collection(dbTables.TicketTable)
+              .insert(ticketObject, (err, ticketData) => {
+                if (err) {
+                  db.close();
+                  responseObject.IsSuccessful = false;
+                  responseObject.ErrorMessage = err.message;
+                  return responseObject;
+                }
+
+                db.close();
+                responseObject.IsSuccessful = true;
+                responseObject.ErrorMessage = "Ticket Reserved Successful!";
+                return responseObject;
+              });
+          } else {
+            db.close();
+            responseObject.IsSuccessful = false;
+            responseObject.ErrorMessage = "Tickets are sold out!";
+            return responseObject;
+          }
         }
-
-        db.close();
-
-        responseObject.IsSuccessful = true;
-        responseObject.ErrorMessage = "Authentication Successful";
-        responseObject.ResponseObject = data;
-        return responseObject;
       });
   });
-
-  //Create ticket object
-  ticketObject.UserID = userId;
-  ticketObject.EventID = eventId;
-  ticketObject.DatePurchased = Date.now();
 };
