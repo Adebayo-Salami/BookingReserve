@@ -105,8 +105,57 @@ router.post("/events", async (req, res) => {
     return;
   } else {
     Response.ResponseCode = "-01";
-    Response.ResponseMessage = "Event Failed to Add";
+    Response.ResponseMessage = "Event Failed to Add | " + response.ErrorMessage;
     res.json(Response);
+    return;
+  }
+});
+
+router.patch("/events/:Id", async (req, res) => {
+  const eventId = req.params.Id;
+  const eventName = req.body.EventName;
+  const eventLocation = req.body.EventLocation;
+  const eventHost = req.body.EventHost;
+  const eventDate = req.body.DateOfEvent;
+  const eventTicketPrice = req.body.EventTicketPrice;
+  const totalTicketToBeAvailable = req.body.TotalTicketsToBeAvailable;
+
+  const response = await EventService.UpdateEvent(
+    eventId,
+    eventName,
+    eventLocation,
+    eventHost,
+    eventDate,
+    eventTicketPrice,
+    totalTicketToBeAvailable
+  );
+  if (response.IsSuccessful == true) {
+    Response.ResponseCode = "00";
+    Response.ResponseMessage = "Event Updated Successfullly";
+    res.json(Response);
+    return;
+  } else {
+    Response.ResponseCode = "-01";
+    Response.ResponseMessage =
+      "Event Failed to Update | " + response.ErrorMessage;
+    res.json(Response);
+    return;
+  }
+});
+
+router.get("/:userID/tickets", async (req, res) => {
+  const UserID = req.params.userID;
+
+  const response = await UserService.GetUserTickets(UserID);
+  if (response.IsSuccessful == true) {
+    Response.ResponseCode = "00";
+    Response.ResponseMessage = "Records Fetched Successfullly";
+    Response.ResponseObject = response.ResponseObject;
+    res.json(Response);
+    return;
+  } else {
+    Response.ResponseCode = "-01";
+    Response.ResponseMessage = response.ErrorMessage;
     return;
   }
 });

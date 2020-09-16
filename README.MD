@@ -70,3 +70,21 @@ response:{
 }
 ]
 }
+
+To Call Update Event Api PATCH [/events/:Id]
+Sample Request:
+Endpoint: {IP}/events
+params: Event_Id
+body:
+{
+"EventName" : "Value",
+"EventLocation" : "Value",
+"EventHost" : "Value",
+"DateOfEvent" : "Value",
+"EventTicketPrice" : "Value",
+"TotalTicketsToBeAvailable" : "Value"
+}
+response:{
+"ResponseCode": "00",
+"ResponseMessage": "Event Updated Successfullly"
+}

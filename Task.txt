@@ -41,7 +41,7 @@ GET /events                             Get all upcoming event  --done
 POST events/<eventId>/ticket            Buy/reserve a ticket for an event --
 PATCH /events/<eventId>/<ticketId>      Cancel ticket reservation --
 POST /events                            Admin route to create a new event --done
-PATCH /events/<eventId>                 Admin route to update an event --
-GET /user/tickets                       Get all user’s reserved tickets for events --
-GET /<userId>/tickets                   Admin route to get all user’s reserved tickets --
+PATCH /events/<eventId>                 Admin route to update an event --done
+GET /user/tickets                       Get all user’s reserved tickets for events --done
+GET /<userId>/tickets                   Admin route to get all user’s reserved tickets --done
 

@@ -140,10 +140,106 @@ exports.LoginUser = async function (emailAddress, password) {
       responseObject.ResponseObject = respcheckUserExists;
       return responseObject;
     } else {
-      responseObject.IsSuccessful = true;
+      responseObject.IsSuccessful = false;
       responseObject.ErrorMessage = "No User with this credential exists!";
       return responseObject;
     }
+  } catch (err) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = err.message;
+    return responseObject;
+  } finally {
+    client.close();
+  }
+};
+
+exports.GetUserTickets = async function (userId) {
+  if (userId == null) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = "User ID Is Required.";
+    return responseObject;
+  }
+
+  const client = await MongoClient.connect(dbTables.Endpoint, {
+    useNewUrlParser: true,
+  }).catch((err) => {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = err.message;
+    return responseObject;
+  });
+
+  if (!client) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = "Could not connect!";
+    return responseObject;
+  }
+
+  try {
+    const db = client.db(dbTables.DatabaseName);
+    let ticketCollection = db.collection(dbTables.TicketTable);
+
+    let checkUserTicketsQuery = {
+      UserID: userId,
+    };
+    let respcheckUserTickets = await ticketCollection
+      .find(checkUserTicketsQuery)
+      .toArray();
+
+    responseObject.IsSuccessful = true;
+    responseObject.ErrorMessage = "Success!";
+    responseObject.ResponseObject = respcheckUserTickets;
+    return responseObject;
+  } catch (err) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = err.message;
+    return responseObject;
+  } finally {
+    client.close();
+  }
+};
+
+exports.GetUserTicketsForEvent = async function (userId, eventId) {
+  if (userId == null) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = "User ID Is Required.";
+    return responseObject;
+  }
+  if (eventId == null) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = "Event ID Is Required.";
+    return responseObject;
+  }
+
+  const client = await MongoClient.connect(dbTables.Endpoint, {
+    useNewUrlParser: true,
+  }).catch((err) => {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = err.message;
+    return responseObject;
+  });
+
+  if (!client) {
+    responseObject.IsSuccessful = false;
+    responseObject.ErrorMessage = "Could not connect!";
+    return responseObject;
+  }
+
+  try {
+    const db = client.db(dbTables.DatabaseName);
+    let ticketCollection = db.collection(dbTables.TicketTable);
+
+    let checkUserTicketsQuery = {
+      UserID: userId,
+      EventID: eventId,
+    };
+    let respcheckUserTickets = await ticketCollection
+      .find(checkUserTicketsQuery)
+      .toArray();
+
+    responseObject.IsSuccessful = true;
+    responseObject.ErrorMessage = "Success!";
+    responseObject.ResponseObject = respcheckUserTickets;
+    return responseObject;
   } catch (err) {
     responseObject.IsSuccessful = false;
     responseObject.ErrorMessage = err.message;
