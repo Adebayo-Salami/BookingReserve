@@ -1,3 +1,20 @@
+This is a purely Api based project. In this project, the following api's was build;
+-Signup
+-Login
+-Fetch All events
+-Purchase/Reserve an event ticket
+-Cancel a Ticket Reservation
+-Add New event
+-Update an event
+-Get All users reserved ticket for an event (scenarios where the user booked multiple tickets for an event)
+-Get All users reserved ticket
+
+In this project, the database used was MongoDB
+-The start up file is index.js, once its ran, as long as mongo db is installed on the client desktop, it will generate the required database and tables
+-See sample request and response for each Api built below;
+
+---
+
 To Call Register User Api POST [/signup] - Create new account
 Sample Request:
 Endpoint: {IP}/signup
